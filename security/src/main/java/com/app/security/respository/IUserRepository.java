@@ -1,13 +1,13 @@
 package com.app.security.respository;
 
-import com.app.security.entities.Role;
+import com.app.security.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface IRoleRepository extends JpaRepository<Role,Long> {
+public interface IUserRepository extends JpaRepository<User,Long> {
 
-    Optional<Role> findByRoleName(String roleName);
+    Optional<User> findByEmail(String email);
 }
