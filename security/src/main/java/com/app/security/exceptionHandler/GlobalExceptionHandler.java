@@ -9,6 +9,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -22,13 +25,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(new CustomApiResponse("Bad Request::"+ex.getMessage()),HttpStatus.BAD_REQUEST);
     }
 
-//    @ExceptionHandler(AccessDeniedException.class)
-//    public ResponseEntity<CustomApiResponse> handleAccessDeniedException(AccessDeniedException ex){
-//        return new ResponseEntity<>(new CustomApiResponse("Access Denied::"+ex.getMessage()),HttpStatus.FORBIDDEN);
-//    }
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<CustomApiResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex){
-        return new ResponseEntity<>(new CustomApiResponse(ex.getMessage()),HttpStatus.BAD_REQUEST);
+    public ResponseEntity<Map<String,String>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex){
+        Map<String,String> errorMap = new LinkedHashMap<>();
+        ex.getBindingResult().getFieldErrors().stream().forEach(fieldError->{
+            errorMap.put(fieldError.getField(),fieldError.getDefaultMessage());
+        });
+        return new ResponseEntity<>(errorMap,HttpStatus.BAD_REQUEST);
     }
 }
