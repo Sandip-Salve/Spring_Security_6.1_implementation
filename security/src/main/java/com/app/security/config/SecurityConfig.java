@@ -1,6 +1,7 @@
 package com.app.security.config;
 
 import com.app.security.filters.JwtRequestFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,10 +41,21 @@ public class SecurityConfig {
                 .cors(withDefaults())
                 .csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(auth->
-                                auth.requestMatchers("/login","/role/**").permitAll()
-                                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                                .requestMatchers("/user/**").hasRole("USER")
-                                .anyRequest().authenticated()
+                                auth.requestMatchers("/admin/**").hasRole("ADMIN")
+                                        .requestMatchers("/user/**").hasRole("USER")
+                                        .requestMatchers("/login","/role/**").permitAll()
+                                        .anyRequest().authenticated()
+                )
+                .exceptionHandling(ex->
+                        ex
+                                .authenticationEntryPoint((req,res,authException)->{
+                                    res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                                    res.getWriter().write("Unauthorized::Missing or Invalid token");
+                                })
+                                .accessDeniedHandler((req,res,accessDeniedException)->{
+                                    res.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                                    res.getWriter().write("Forbidden::You don't have permissions");
+                                })
                 )
                 .formLogin(formLogin->formLogin.disable())
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
